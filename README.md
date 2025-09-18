@@ -1,33 +1,26 @@
-# Gemini Antiblock Proxy (Go 版本)
+﻿# Gemini Antiblock Proxy (Go 鐗堟湰)
 
-这是一个用 Go 语言重写的 Gemini API 代理服务器，具有强大的流式重试和标准化错误响应功能。它可以处理模型的"思考"过程，并在重试后过滤思考内容以保持干净的输出流。
+![Gemini Antiblock Spectre Proxy Overview](docs/images/proxy-overview.png)
+杩欐槸涓€涓敤 Go 璇█閲嶅啓鐨?Gemini API 浠ｇ悊鏈嶅姟鍣紝鍏锋湁寮哄ぇ鐨勬祦寮忛噸璇曞拰鏍囧噯鍖栭敊璇搷搴斿姛鑳姐€傚畠鍙互澶勭悊妯″瀷鐨?鎬濊€?杩囩▼锛屽苟鍦ㄩ噸璇曞悗杩囨护鎬濊€冨唴瀹逛互淇濇寔骞插噣鐨勮緭鍑烘祦銆?
+## 鍔熻兘鐗规€?
+- **娴佸紡鍝嶅簲澶勭悊**: 鏀寔 Server-Sent Events (SSE)娴佸紡鍝嶅簲
+- **鏅鸿兘閲嶈瘯鏈哄埗**: 褰撴祦琚腑鏂椂鑷姩閲嶈瘯锛屾渶澶氭敮鎸?100 娆¤繛缁噸璇?- **鎬濊€冨唴瀹硅繃婊?*: 鍙互鍦ㄩ噸璇曞悗杩囨护妯″瀷鐨勬€濊€冭繃绋嬶紝淇濇寔杈撳嚭鐨勬暣娲?- **鏍囧噯鍖栭敊璇搷搴?*: 鎻愪緵绗﹀悎 Google API 鏍囧噯鐨勯敊璇搷搴旀牸寮?- **CORS 鏀寔**: 瀹屾暣鐨勮法鍩熻祫婧愬叡浜敮鎸?- **閫熺巼闄愬埗**: 鍙厤缃殑璇锋眰閫熺巼闄愬埗鍔熻兘
+- **璇︾粏鏃ュ織璁板綍**: 鏀寔璋冭瘯妯″紡鍜岃缁嗙殑鎿嶄綔鏃ュ織
 
-## 功能特性
+## 蹇€熷紑濮?
+### 浣跨敤 Docker锛堟帹鑽愶級
 
-- **流式响应处理**: 支持 Server-Sent Events (SSE)流式响应
-- **智能重试机制**: 当流被中断时自动重试，最多支持 100 次连续重试
-- **思考内容过滤**: 可以在重试后过滤模型的思考过程，保持输出的整洁
-- **标准化错误响应**: 提供符合 Google API 标准的错误响应格式
-- **CORS 支持**: 完整的跨域资源共享支持
-- **速率限制**: 可配置的请求速率限制功能
-- **详细日志记录**: 支持调试模式和详细的操作日志
-
-## 快速开始
-
-### 使用 Docker（推荐）
-
-#### 方式一：使用预构建镜像
+#### 鏂瑰紡涓€锛氫娇鐢ㄩ鏋勫缓闀滃儚
 
 ```bash
-# 拉取并运行
-docker run -d \
+# 鎷夊彇骞惰繍琛?docker run -d \
   --name gemini-antiblock \
   -p 8080:8080 \
   -e UPSTREAM_URL_BASE=https://generativelanguage.googleapis.com \
   ghcr.io/qlhazycoder/gemini-antiblock-spectre-proxy:latest
 ```
 
-#### 方式二：使用 Docker Compose
+#### 鏂瑰紡浜岋細浣跨敤 Docker Compose
 
 ```bash
 git clone https://github.com/QLHazyCoder/gemini-antiblock-spectre-proxy.git
@@ -35,9 +28,8 @@ cd gemini-antiblock-spectre-proxy
 docker-compose up -d
 ```
 
-> 首次运行前先执行 `cp .env.example .env` 并填写所需变量（SpectreProxy / API Key 等），Compose 会自动读取。
-
-#### 方式三：本地构建
+> 棣栨杩愯鍓嶅厛鎵ц `cp .env.example .env` 骞跺～鍐欐墍闇€鍙橀噺锛圫pectreProxy / API Key 绛夛級锛孋ompose 浼氳嚜鍔ㄨ鍙栥€?
+#### 鏂瑰紡涓夛細鏈湴鏋勫缓
 
 ```bash
 git clone https://github.com/QLHazyCoder/gemini-antiblock-spectre-proxy.git
@@ -46,47 +38,45 @@ docker build -t gemini-antiblock-spectre-proxy .
 docker run -d --name gemini-antiblock -p 8080:8080 gemini-antiblock-spectre-proxy
 ```
 
-### 从源码运行
-
+### 浠庢簮鐮佽繍琛?
 ```bash
-# 前置要求：Go 1.21+
+# 鍓嶇疆瑕佹眰锛欸o 1.21+
 git clone https://github.com/QLHazyCoder/gemini-antiblock-spectre-proxy.git
 cd gemini-antiblock-spectre-proxy
 go mod download
 go run main.go
 ```
 
-## 配置
+## 閰嶇疆
 
-### 环境变量
+### 鐜鍙橀噺
 
-| 变量名                         | 默认值                                      | 描述                       |
+| 鍙橀噺鍚?                        | 榛樿鍊?                                     | 鎻忚堪                       |
 | ------------------------------ | ------------------------------------------- | -------------------------- |
-| `UPSTREAM_URL_BASE`            | `https://generativelanguage.googleapis.com` | Gemini API 的基础 URL；为空且配置 Spectre 时将自动拼接 |
-| `SPECTRE_PROXY_WORKER_URL`     | *(空)*                                      | SpectreProxy Worker 地址（可选）    |
-| `SPECTRE_PROXY_AUTH_TOKEN`     | *(空)*                                      | SpectreProxy 认证 Token（可选）    |
-| `ANTIBLOCK_MODEL_PREFIXES`     | `gemini-2.5-pro`                            | 需启用抗断流的模型前缀（逗号分隔） |
-| `PORT`                         | `8080`                                      | 服务器监听端口             |
-| `DEBUG_MODE`                   | `true`                                      | 是否启用调试日志           |
-| `MAX_CONSECUTIVE_RETRIES`      | `100`                                       | 流中断时的最大连续重试次数 |
-| `RETRY_DELAY_MS`               | `750`                                       | 重试间隔时间（毫秒）       |
-| `SWALLOW_THOUGHTS_AFTER_RETRY` | `true`                                      | 重试后是否过滤思考内容     |
-| `ENABLE_RATE_LIMIT`            | `false`                                     | 是否启用速率限制           |
-| `RATE_LIMIT_COUNT`             | `10`                                        | 速率限制请求数             |
-| `RATE_LIMIT_WINDOW_SECONDS`    | `60`                                        | 速率限制窗口时间（秒）     |
-| `ENABLE_PUNCTUATION_HEURISTIC` | `true`                                      | 启用句末标点启发式优化     |
+| `UPSTREAM_URL_BASE`            | `https://generativelanguage.googleapis.com` | Gemini API 鐨勫熀纭€ URL锛涗负绌轰笖閰嶇疆 Spectre 鏃跺皢鑷姩鎷兼帴 |
+| `SPECTRE_PROXY_WORKER_URL`     | *(绌?*                                      | SpectreProxy Worker 鍦板潃锛堝彲閫夛級    |
+| `SPECTRE_PROXY_AUTH_TOKEN`     | *(绌?*                                      | SpectreProxy 璁よ瘉 Token锛堝彲閫夛級    |
+| `ANTIBLOCK_MODEL_PREFIXES`     | `gemini-2.5-pro`                            | 闇€鍚敤鎶楁柇娴佺殑妯″瀷鍓嶇紑锛堥€楀彿鍒嗛殧锛?|
+| `PORT`                         | `8080`                                      | 鏈嶅姟鍣ㄧ洃鍚鍙?            |
+| `DEBUG_MODE`                   | `true`                                      | 鏄惁鍚敤璋冭瘯鏃ュ織           |
+| `MAX_CONSECUTIVE_RETRIES`      | `100`                                       | 娴佷腑鏂椂鐨勬渶澶ц繛缁噸璇曟鏁?|
+| `RETRY_DELAY_MS`               | `750`                                       | 閲嶈瘯闂撮殧鏃堕棿锛堟绉掞級       |
+| `SWALLOW_THOUGHTS_AFTER_RETRY` | `true`                                      | 閲嶈瘯鍚庢槸鍚﹁繃婊ゆ€濊€冨唴瀹?    |
+| `ENABLE_RATE_LIMIT`            | `false`                                     | 鏄惁鍚敤閫熺巼闄愬埗           |
+| `RATE_LIMIT_COUNT`             | `10`                                        | 閫熺巼闄愬埗璇锋眰鏁?            |
+| `RATE_LIMIT_WINDOW_SECONDS`    | `60`                                        | 閫熺巼闄愬埗绐楀彛鏃堕棿锛堢锛?    |
+| `ENABLE_PUNCTUATION_HEURISTIC` | `true`                                      | 鍚敤鍙ユ湯鏍囩偣鍚彂寮忎紭鍖?    |
 
-> 💡 如果通过 Cloudflare SpectreProxy 中转，可在 `.env` 中额外声明 `SPECTRE_PROXY_WORKER_URL` 与 `SPECTRE_PROXY_AUTH_TOKEN`，并将 `UPSTREAM_URL_BASE` 留空，应用会自动拼接 `https://<WORKER>/<AUTH_TOKEN>/gemini`。
+> 馃挕 濡傛灉閫氳繃 Cloudflare SpectreProxy 涓浆锛屽彲鍦?`.env` 涓澶栧０鏄?`SPECTRE_PROXY_WORKER_URL` 涓?`SPECTRE_PROXY_AUTH_TOKEN`锛屽苟灏?`UPSTREAM_URL_BASE` 鐣欑┖锛屽簲鐢ㄤ細鑷姩鎷兼帴 `https://<WORKER>/<AUTH_TOKEN>/gemini`銆?
+### 閰嶇疆鏂囦欢
 
-### 配置文件
-
-从示例文件创建配置：
+浠庣ず渚嬫枃浠跺垱寤洪厤缃細
 
 ```bash
 cp .env.example .env
 ```
 
-### Docker 完整配置示例
+### Docker 瀹屾暣閰嶇疆绀轰緥
 
 ```bash
 docker run -d \
@@ -106,17 +96,14 @@ docker run -d \
   ghcr.io/qlhazycoder/gemini-antiblock-spectre-proxy:latest
 ```
 
-## 使用方法
+## 浣跨敤鏂规硶
 
-代理服务器启动后，你可以将 Gemini API 的请求发送到这个代理服务器。代理会自动：
-
-1. 转发请求到上游 Gemini API
-2. 处理流式响应
-3. 在流中断时自动重试
-4. 注入系统提示确保响应以`[done]`结尾
-5. 过滤重试后的思考内容（如果启用）
-
-### 示例请求
+浠ｇ悊鏈嶅姟鍣ㄥ惎鍔ㄥ悗锛屼綘鍙互灏?Gemini API 鐨勮姹傚彂閫佸埌杩欎釜浠ｇ悊鏈嶅姟鍣ㄣ€備唬鐞嗕細鑷姩锛?
+1. 杞彂璇锋眰鍒颁笂娓?Gemini API
+2. 澶勭悊娴佸紡鍝嶅簲
+3. 鍦ㄦ祦涓柇鏃惰嚜鍔ㄩ噸璇?4. 娉ㄥ叆绯荤粺鎻愮ず纭繚鍝嶅簲浠[done]`缁撳熬
+5. 杩囨护閲嶈瘯鍚庣殑鎬濊€冨唴瀹癸紙濡傛灉鍚敤锛?
+### 绀轰緥璇锋眰
 
 ```bash
 curl "http://127.0.0.1:8080/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse" \
@@ -141,95 +128,77 @@ curl "http://127.0.0.1:8080/v1beta/models/gemini-2.5-flash:streamGenerateContent
   }'
 ```
 
-### 健康检查
-
+### 鍋ュ悍妫€鏌?
 ```bash
 curl http://localhost:8080/health
 ```
 
-## 项目结构
+## 椤圭洰缁撴瀯
 
 ```
 gemini-antiblock-spectre-proxy/
-├── main.go                 # 主程序入口
-├── config/
-│   └── config.go          # 配置管理
-├── logger/
-│   └── logger.go          # 日志记录
-├── handlers/
-│   ├── errors.go          # 错误处理和CORS
-│   ├── health.go          # 健康检查
-│   ├── proxy.go           # 代理处理逻辑
-│   └── ratelimiter.go     # 速率限制
-├── streaming/
-│   ├── sse.go             # SSE流处理
-│   └── retry.go           # 重试逻辑
-├── mock-server/           # 测试模拟服务器
-├── Dockerfile             # Docker构建文件
-├── docker-compose.yml     # Docker Compose配置
-└── README.md              # 项目文档
+鈹溾攢鈹€ main.go                 # 涓荤▼搴忓叆鍙?鈹溾攢鈹€ config/
+鈹?  鈹斺攢鈹€ config.go          # 閰嶇疆绠＄悊
+鈹溾攢鈹€ logger/
+鈹?  鈹斺攢鈹€ logger.go          # 鏃ュ織璁板綍
+鈹溾攢鈹€ handlers/
+鈹?  鈹溾攢鈹€ errors.go          # 閿欒澶勭悊鍜孋ORS
+鈹?  鈹溾攢鈹€ health.go          # 鍋ュ悍妫€鏌?鈹?  鈹溾攢鈹€ proxy.go           # 浠ｇ悊澶勭悊閫昏緫
+鈹?  鈹斺攢鈹€ ratelimiter.go     # 閫熺巼闄愬埗
+鈹溾攢鈹€ streaming/
+鈹?  鈹溾攢鈹€ sse.go             # SSE娴佸鐞?鈹?  鈹斺攢鈹€ retry.go           # 閲嶈瘯閫昏緫
+鈹溾攢鈹€ mock-server/           # 娴嬭瘯妯℃嫙鏈嶅姟鍣?鈹溾攢鈹€ Dockerfile             # Docker鏋勫缓鏂囦欢
+鈹溾攢鈹€ docker-compose.yml     # Docker Compose閰嶇疆
+鈹斺攢鈹€ README.md              # 椤圭洰鏂囨。
 ```
 
-## 高级功能
+## 楂樼骇鍔熻兘
 
-### SpectreProxy Worker（可选）
+### SpectreProxy Worker锛堝彲閫夛級
 
-仓库附带 `SpectreProxy/` 目录，提供基于 Cloudflare Workers 原生 Socket 接入的 SpectreProxy 实现，可构建 `https://<WORKER>/<AUTH_TOKEN>/gemini` 的中转上游。
+浠撳簱闄勫甫 `SpectreProxy/` 鐩綍锛屾彁渚涘熀浜?Cloudflare Workers 鍘熺敓 Socket 鎺ュ叆鐨?SpectreProxy 瀹炵幇锛屽彲鏋勫缓 `https://<WORKER>/<AUTH_TOKEN>/gemini` 鐨勪腑杞笂娓搞€?
+浣跨敤鏂瑰紡锛?
+1. 鎸?`SpectreProxy/README.md` 鐨勮鏄庨儴缃?`AIGatewayWithSocks.js`銆?2. 鍦?`.env` 涓～鍐?`SPECTRE_PROXY_WORKER_URL` 涓?`SPECTRE_PROXY_AUTH_TOKEN`锛屽苟灏?`UPSTREAM_URL_BASE` 鐣欑┖锛涘簲鐢ㄤ細鑷姩鎷兼帴 SpectreProxy 涓婃父鍦板潃銆?3. 鑻ヤ笉浣跨敤 SpectreProxy锛屽彲鐩存帴璁剧疆 `UPSTREAM_URL_BASE` 涓哄畼鏂?`https://generativelanguage.googleapis.com` 鎴栦换鎰忚嚜瀹氫箟涓婃父銆?
+> SpectreProxy 浣跨敤 MIT 璁稿彲璇佸苟淇濈暀鍘熶綔鑰?Davidasx 鐨勭増鏉冿紝璇烽槄璇荤洰褰曞唴 README 浠ヤ簡瑙ｆ洿澶氬姛鑳戒笌闄愬埗銆?
+### 閲嶈瘯鏈哄埗
 
-使用方式：
+褰撴娴嬪埌浠ヤ笅鎯呭喌鏃讹紝浠ｇ悊浼氳嚜鍔ㄩ噸璇曪細
 
-1. 按 `SpectreProxy/README.md` 的说明部署 `AIGatewayWithSocks.js`。
-2. 在 `.env` 中填写 `SPECTRE_PROXY_WORKER_URL` 与 `SPECTRE_PROXY_AUTH_TOKEN`，并将 `UPSTREAM_URL_BASE` 留空；应用会自动拼接 SpectreProxy 上游地址。
-3. 若不使用 SpectreProxy，可直接设置 `UPSTREAM_URL_BASE` 为官方 `https://generativelanguage.googleapis.com` 或任意自定义上游。
+1. **娴佷腑鏂?*: 娴佹剰澶栫粨鏉熻€屾病鏈夊畬鎴愭爣璁?2. **鍐呭琚樆姝?*: 妫€娴嬪埌鍐呭琚繃婊ゆ垨闃绘
+3. **鎬濊€冧腑瀹屾垚**: 鍦ㄦ€濊€冨潡涓娴嬪埌瀹屾垚鏍囪锛堟棤鏁堢姸鎬侊級
+4. **寮傚父瀹屾垚鍘熷洜**: 闈炴甯哥殑瀹屾垚鍘熷洜
+5. **涓嶅畬鏁村搷搴?*: 鍝嶅簲鐪嬭捣鏉ヤ笉瀹屾暣
 
-> SpectreProxy 使用 MIT 许可证并保留原作者 Davidasx 的版权，请阅读目录内 README 以了解更多功能与限制。
+閲嶈瘯鏃朵細锛?
+- 淇濈暀宸茬敓鎴愮殑鏂囨湰浣滀负涓婁笅鏂?- 鏋勫缓缁х画瀵硅瘽鐨勬柊璇锋眰
+- 鍦ㄨ揪鍒版渶澶ч噸璇曟鏁板悗杩斿洖閿欒
 
-### 重试机制
+### 鏃ュ織璁板綍
 
-当检测到以下情况时，代理会自动重试：
+浠ｇ悊鎻愪緵涓変釜绾у埆鐨勬棩蹇楋細
 
-1. **流中断**: 流意外结束而没有完成标记
-2. **内容被阻止**: 检测到内容被过滤或阻止
-3. **思考中完成**: 在思考块中检测到完成标记（无效状态）
-4. **异常完成原因**: 非正常的完成原因
-5. **不完整响应**: 响应看起来不完整
-
-重试时会：
-
-- 保留已生成的文本作为上下文
-- 构建继续对话的新请求
-- 在达到最大重试次数后返回错误
-
-### 日志记录
-
-代理提供三个级别的日志：
-
-- **DEBUG**: 详细的调试信息（仅在调试模式下显示）
-- **INFO**: 一般信息和操作状态
-- **ERROR**: 错误信息和异常
-
-### 测试和开发
-
-项目包含一个 Mock Server 用于测试，支持多种测试场景：
+- **DEBUG**: 璇︾粏鐨勮皟璇曚俊鎭紙浠呭湪璋冭瘯妯″紡涓嬫樉绀猴級
+- **INFO**: 涓€鑸俊鎭拰鎿嶄綔鐘舵€?- **ERROR**: 閿欒淇℃伅鍜屽紓甯?
+### 娴嬭瘯鍜屽紑鍙?
+椤圭洰鍖呭惈涓€涓?Mock Server 鐢ㄤ簬娴嬭瘯锛屾敮鎸佸绉嶆祴璇曞満鏅細
 
 ```bash
 cd mock-server
 go run main.go
 ```
 
-详细测试说明请参考 [`mock-server/README.md`](mock-server/README.md)。
+璇︾粏娴嬭瘯璇存槑璇峰弬鑰?[`mock-server/README.md`](mock-server/README.md)銆?
+## 鐢熶骇閮ㄧ讲
 
-## 生产部署
+### 鐢熶骇鐜寤鸿
 
-### 生产环境建议
-
-1. **使用特定版本标签**
+1. **浣跨敤鐗瑰畾鐗堟湰鏍囩**
 
    ```bash
    docker pull ghcr.io/qlhazycoder/gemini-antiblock-spectre-proxy:v1.0.0
    ```
 
-2. **设置资源限制**
+2. **璁剧疆璧勬簮闄愬埗**
 
    ```bash
    docker run -d \
@@ -240,7 +209,7 @@ go run main.go
      ghcr.io/qlhazycoder/gemini-antiblock-spectre-proxy:v1.0.0
    ```
 
-3. **启用速率限制**
+3. **鍚敤閫熺巼闄愬埗**
 
    ```bash
    -e ENABLE_RATE_LIMIT=true \
@@ -248,30 +217,24 @@ go run main.go
    -e RATE_LIMIT_WINDOW_SECONDS=60
    ```
 
-4. **配置监控**
-   - 健康检查：`/health` 端点
-   - 日志轮转：避免日志文件过大
-   - 重启策略：确保服务高可用
+4. **閰嶇疆鐩戞帶**
+   - 鍋ュ悍妫€鏌ワ細`/health` 绔偣
+   - 鏃ュ織杞浆锛氶伩鍏嶆棩蹇楁枃浠惰繃澶?   - 閲嶅惎绛栫暐锛氱‘淇濇湇鍔￠珮鍙敤
 
-### 多架构支持
-
-Docker 镜像支持：
-
+### 澶氭灦鏋勬敮鎸?
+Docker 闀滃儚鏀寔锛?
 - `linux/amd64` (x86_64)
 - `linux/arm64` (ARM64)
 
 ### CI/CD
 
-项目使用 GitHub Actions 自动构建和发布：
+椤圭洰浣跨敤 GitHub Actions 鑷姩鏋勫缓鍜屽彂甯冿細
 
-- **触发条件**：推送到 `main`/`master` 分支或创建标签
-- **构建平台**：支持 `linux/amd64` 和 `linux/arm64`
-- **发布位置**：`ghcr.io/qlhazycoder/gemini-antiblock-spectre-proxy`
+- **瑙﹀彂鏉′欢**锛氭帹閫佸埌 `main`/`master` 鍒嗘敮鎴栧垱寤烘爣绛?- **鏋勫缓骞冲彴**锛氭敮鎸?`linux/amd64` 鍜?`linux/arm64`
+- **鍙戝竷浣嶇疆**锛歚ghcr.io/qlhazycoder/gemini-antiblock-spectre-proxy`
 
-## 许可证
+## 璁稿彲璇?
+椤圭洰鍦?[MIT License](LICENSE) 涓嬪彂甯冿紝淇濈暀鍘熷浣滆€?Davidasx 鐨勭増鏉冨０鏄庯紝骞惰拷鍔犳湰浠撳簱鐨勪慨鏀圭増鏉冧俊鎭€?
+## 鍘熷鐗堟湰
 
-项目在 [MIT License](LICENSE) 下发布，保留原始作者 Davidasx 的版权声明，并追加本仓库的修改版权信息。
-
-## 原始版本
-
-这是基于 Cloudflare Worker 版本的 Go 语言重写版本。原始 JavaScript 版本提供了相同的功能，但运行在 Cloudflare Workers 平台上。
+杩欐槸鍩轰簬 Cloudflare Worker 鐗堟湰鐨?Go 璇█閲嶅啓鐗堟湰銆傚師濮?JavaScript 鐗堟湰鎻愪緵浜嗙浉鍚岀殑鍔熻兘锛屼絾杩愯鍦?Cloudflare Workers 骞冲彴涓娿€?
