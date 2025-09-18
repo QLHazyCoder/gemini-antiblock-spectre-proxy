@@ -1,0 +1,61 @@
+# Git相关文件
+.git
+.gitignore
+.gitattributes
+
+# 文档和说明文件
+README.md
+*.md
+docs/
+
+# 环境和配置文件
+.env
+.env.*
+!.env.example
+
+# 编译产物
+gemini-antiblock
+*.exe
+*.so
+*.dylib
+
+# 测试文件
+*_test.go
+test/
+tests/
+coverage.out
+mock-server/
+
+# IDE和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+tmp/
+temp/
+
+# Docker相关文件
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+
+# CI/CD文件
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+
+# 其他
+node_modules/
+.npm
+.cache

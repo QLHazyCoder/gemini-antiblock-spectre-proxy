@@ -1,0 +1,23 @@
+services:
+  gemini-antiblock-spectre-proxy:
+    container_name: gemini-antiblock-spectre-proxy
+    image: ghcr.io/qlhazycoder/gemini-antiblock-spectre-proxy:latest
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - UPSTREAM_URL_BASE=${UPSTREAM_URL_BASE:-}
+      - SPECTRE_PROXY_WORKER_URL=${SPECTRE_PROXY_WORKER_URL:-}
+      - SPECTRE_PROXY_AUTH_TOKEN=${SPECTRE_PROXY_AUTH_TOKEN:-}
+      - ANTIBLOCK_MODEL_PREFIXES=${ANTIBLOCK_MODEL_PREFIXES:-gemini-2.5-pro}
+      - PORT=${PORT:-8080}
+      - DEBUG_MODE=${DEBUG_MODE:-false}
+      - MAX_CONSECUTIVE_RETRIES=${MAX_CONSECUTIVE_RETRIES:-100}
+      - RETRY_DELAY_MS=${RETRY_DELAY_MS:-750}
+      - SWALLOW_THOUGHTS_AFTER_RETRY=${SWALLOW_THOUGHTS_AFTER_RETRY:-true}
+      - ENABLE_RATE_LIMIT=${ENABLE_RATE_LIMIT:-false}
+      - RATE_LIMIT_COUNT=${RATE_LIMIT_COUNT:-10}
+      - RATE_LIMIT_WINDOW_SECONDS=${RATE_LIMIT_WINDOW_SECONDS:-60}
+      - ENABLE_PUNCTUATION_HEURISTIC=${ENABLE_PUNCTUATION_HEURISTIC:-true}
+    restart: unless-stopped
