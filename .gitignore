@@ -20,7 +20,7 @@ go.work
 # Built binaries
 gemini-antiblock
 /gemini-antiblock
-
+/docs/docs
 # Environment variables
 .env
 .env.local
