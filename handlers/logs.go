@@ -183,7 +183,7 @@ tbody tr:hover{background:rgba(59,130,246,.14)}
             <th data-column="timestamp">时间</th>
             <th data-column="model">模型</th>
             <th data-column="method">请求方法</th>
-            <th class="col-path">请求路径</th>
+            <th class="col-path">上游请求</th>
             <th data-column="streaming">是否流式</th>
             <th data-column="antiblock">抗断流</th>
             <th data-column="status">HTTP 状态</th>
@@ -402,9 +402,9 @@ const buildRow = (entry) => {
   html += '<td>' + fmtTs(entry.timestamp) + '</td>';
   html += '<td>' + (entry.model ? '<span class="pill">' + entry.model + '</span>' : '<span class="muted">—</span>') + '</td>';
   html += '<td>' + (entry.method || '<span class="muted">—</span>') + '</td>';
-  const pathText = entry.path || '';
-  const safePath = escapeHTML(pathText);
-  html += '<td class="col-path" title="' + safePath + '">' + (pathText ? safePath : '<span class="muted">—</span>') + '</td>';
+  const upstreamText = entry.upstreamUrl || entry.path || '';
+  const safeUpstream = escapeHTML(upstreamText);
+  html += '<td class="col-path" title="' + safeUpstream + '">' + (upstreamText ? safeUpstream : '<span class="muted">—</span>') + '</td>';
   html += '<td>' + (entry.streaming ? '<span class="badge yes">是</span>' : '<span class="badge no">否</span>') + '</td>';
   html += '<td>' + (entry.antiblockEnabled ? '<span class="badge yes">是</span>' : '<span class="badge no">否</span>') + '</td>';
   if (entry.status === undefined || entry.status === null) {

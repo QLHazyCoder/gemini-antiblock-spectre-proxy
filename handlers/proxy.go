@@ -169,6 +169,10 @@ func (h *ProxyHandler) HandleStreamingPost(w http.ResponseWriter, r *http.Reques
 		upstreamURL += "?" + urlObj.RawQuery
 	}
 
+	if rid, ok := r.Context().Value(ctxKeyRequestID).(string); ok && rid != "" {
+		metrics.SetUpstream(rid, upstreamURL)
+	}
+
 	logger.LogInfo("=== NEW STREAMING REQUEST ===")
 	logger.LogInfo("Upstream URL:", upstreamURL)
 	logger.LogInfo("Request method:", r.Method)
@@ -330,6 +334,10 @@ func (h *ProxyHandler) HandleStreamingPassthrough(w http.ResponseWriter, r *http
 		upstreamURL += "?" + urlObj.RawQuery
 	}
 
+	if rid, ok := r.Context().Value(ctxKeyRequestID).(string); ok && rid != "" {
+		metrics.SetUpstream(rid, upstreamURL)
+	}
+
 	logger.LogInfo("=== STREAMING PASSTHROUGH REQUEST ===")
 	logger.LogInfo("[PASSTHROUGH] Upstream URL:", upstreamURL)
 
@@ -431,6 +439,10 @@ func (h *ProxyHandler) HandleNonStreaming(w http.ResponseWriter, r *http.Request
 	upstreamURL := upstreamBase + urlObj.Path
 	if urlObj.RawQuery != "" {
 		upstreamURL += "?" + urlObj.RawQuery
+	}
+
+	if rid, ok := r.Context().Value(ctxKeyRequestID).(string); ok && rid != "" {
+		metrics.SetUpstream(rid, upstreamURL)
 	}
 
 	upstreamHeaders := h.BuildUpstreamHeaders(r.Header)
