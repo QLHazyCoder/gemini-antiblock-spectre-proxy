@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -28,7 +29,14 @@ func main() {
 	logger.SetDebugMode(cfg.DebugMode)
 
 	logger.LogInfo("=== GEMINI ANTIBLOCK PROXY STARTING ===")
-	logger.LogInfo(fmt.Sprintf("Upstream URL: %s", cfg.UpstreamURLBase))
+	upstreamSummary := cfg.UpstreamURLBase
+	if len(cfg.UpstreamURLBases) > 1 {
+		upstreamSummary = strings.Join(cfg.UpstreamURLBases, ", ")
+	}
+	logger.LogInfo(fmt.Sprintf("Upstream URL: %s", upstreamSummary))
+	if len(cfg.SpectreProxyWorkerURLs) > 1 {
+		logger.LogInfo(fmt.Sprintf("Spectre worker pool size: %d", len(cfg.SpectreProxyWorkerURLs)))
+	}
 	logger.LogInfo(fmt.Sprintf("Max retries: %d", cfg.MaxConsecutiveRetries))
 	logger.LogInfo(fmt.Sprintf("Debug mode: %t", cfg.DebugMode))
 	logger.LogInfo(fmt.Sprintf("Retry delay: %v", cfg.RetryDelayMs))
