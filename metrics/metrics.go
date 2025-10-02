@@ -3,6 +3,7 @@ package metrics
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -15,6 +16,7 @@ type RequestEntry struct {
 	Timestamp  time.Time `json:"timestamp"`
 	Method     string    `json:"method"`
 	Path       string    `json:"path"`
+	Upstream   string    `json:"upstreamUrl,omitempty"`
 	Model      string    `json:"model"`
 	Streaming  bool      `json:"streaming"`
 	Antiblock  bool      `json:"antiblockEnabled"`
@@ -149,6 +151,31 @@ func FinishRequest(requestID string, status int, success bool, errMsg string) {
 			"entry": s,
 		})
 	}
+}
+
+// SetUpstream updates the recorded upstream URL for an active request.
+func SetUpstream(requestID, upstream string) {
+	normalized := normalizeUpstreamDisplay(upstream)
+
+	sessMu.Lock()
+	if s, ok := sessions[requestID]; ok {
+		s.Upstream = normalized
+	}
+	sessMu.Unlock()
+}
+
+func normalizeUpstreamDisplay(raw string) string {
+	if raw == "" {
+		return ""
+	}
+	if parsed, err := url.Parse(raw); err == nil && parsed.Host != "" {
+		scheme := parsed.Scheme
+		if scheme == "" {
+			scheme = "https"
+		}
+		return scheme + "://" + parsed.Host
+	}
+	return raw
 }
 
 // Snapshot returns current stats and recent logs.

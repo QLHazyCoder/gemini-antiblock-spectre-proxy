@@ -75,7 +75,7 @@ go run main.go
 | 变量名                         | 默认值                                      | 描述                       |
 | ------------------------------ | ------------------------------------------- | -------------------------- |
 | `UPSTREAM_URL_BASE`            | `https://generativelanguage.googleapis.com` | Gemini API 的基础 URL；为空且配置 Spectre 时将自动拼接 |
-| `SPECTRE_PROXY_WORKER_URL`     | *(空)*                                      | SpectreProxy Worker 地址（可选）    |
+| `SPECTRE_PROXY_WORKER_URL`     | *(空)*                                      | SpectreProxy Worker 地址（可选，可填写多个，自动轮询）    |
 | `SPECTRE_PROXY_AUTH_TOKEN`     | *(空)*                                      | SpectreProxy 认证 Token（可选）    |
 | `ANTIBLOCK_MODEL_PREFIXES`     | `gemini-2.5-pro`                            | 需启用抗断流的模型前缀（逗号分隔） |
 | `PORT`                         | `8080`                                      | 服务器监听端口             |
@@ -88,7 +88,7 @@ go run main.go
 | `RATE_LIMIT_WINDOW_SECONDS`    | `60`                                        | 速率限制窗口时间（秒）     |
 | `ENABLE_PUNCTUATION_HEURISTIC` | `true`                                      | 启用句末标点启发式优化     |
 
-> 💡 如果通过 Cloudflare SpectreProxy 中转，可在 `.env` 中额外声明 `SPECTRE_PROXY_WORKER_URL` 与 `SPECTRE_PROXY_AUTH_TOKEN`，并将 `UPSTREAM_URL_BASE` 留空，应用会自动拼接 `https://<WORKER>/<AUTH_TOKEN>/gemini`。
+> 💡 如果通过 Cloudflare SpectreProxy 中转，可在 `.env` 中额外声明 `SPECTRE_PROXY_WORKER_URL` 与 `SPECTRE_PROXY_AUTH_TOKEN`，并将 `UPSTREAM_URL_BASE` 留空，应用会自动拼接 `https://<WORKER>/<AUTH_TOKEN>/gemini`。`SPECTRE_PROXY_WORKER_URL` 支持逗号、分号或换行分隔多个地址，系统会自动进行轮询转发，以分散 Cloudflare 免费额度的压力。
 
 ### 配置文件
 
@@ -190,8 +190,8 @@ gemini-antiblock-spectre-proxy/
 
 使用方式：
 
-1. 按 `SpectreProxy/README.md` 的说明部署 `AIGatewayWithSocks.js`。
-2. 在 `.env` 中填写 `SPECTRE_PROXY_WORKER_URL` 与 `SPECTRE_PROXY_AUTH_TOKEN`，并将 `UPSTREAM_URL_BASE` 留空；应用会自动拼接 SpectreProxy 上游地址。
+1. 按 `SpectreProxy/README.md` 的说明部署 `AIGatewayWithSocks.js`（可以一键部署多个 Worker）。
+2. 在 `.env` 中填写 `SPECTRE_PROXY_WORKER_URL`（支持多个地址）与 `SPECTRE_PROXY_AUTH_TOKEN`，并将 `UPSTREAM_URL_BASE` 留空；应用会自动拼接并轮询 SpectreProxy 上游。
 3. 若不使用 SpectreProxy，可直接设置 `UPSTREAM_URL_BASE` 为官方 `https://generativelanguage.googleapis.com` 或任意自定义上游。
 
 > SpectreProxy 使用 MIT 许可证并保留原作者 Davidasx 的版权，请阅读目录内 README 以了解更多功能与限制。

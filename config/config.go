@@ -10,8 +10,10 @@ import (
 // Config holds all configuration values
 type Config struct {
 	UpstreamURLBase            string
+	UpstreamURLBases           []string
 	AntiblockModelPrefixes     []string
 	SpectreProxyWorkerURL      string
+	SpectreProxyWorkerURLs     []string
 	SpectreProxyAuthToken      string
 	MaxConsecutiveRetries      int
 	DebugMode                  bool
@@ -26,21 +28,32 @@ type Config struct {
 
 // LoadConfig loads configuration from environment variables
 func LoadConfig() *Config {
-	workerURL := getEnvString("SPECTRE_PROXY_WORKER_URL", "")
+	workerURLRaw := getEnvString("SPECTRE_PROXY_WORKER_URL", "")
+	workerURLs := getEnvStringSliceFlexible(workerURLRaw)
 	authToken := getEnvString("SPECTRE_PROXY_AUTH_TOKEN", "")
 
 	upstreamBase := getEnvString("UPSTREAM_URL_BASE", "")
-	if upstreamBase == "" && workerURL != "" && authToken != "" {
-		upstreamBase = buildSpectreUpstream(workerURL, authToken)
+	var upstreamBases []string
+	if upstreamBase == "" && len(workerURLs) > 0 && authToken != "" {
+		for _, worker := range workerURLs {
+			if base := buildSpectreUpstream(worker, authToken); base != "" {
+				upstreamBases = append(upstreamBases, base)
+			}
+		}
+		if len(upstreamBases) > 0 {
+			upstreamBase = upstreamBases[0]
+		}
 	}
 	if upstreamBase == "" {
 		upstreamBase = "https://generativelanguage.googleapis.com"
 	}
 
-	return &Config{
+	cfg := &Config{
 		UpstreamURLBase:            upstreamBase,
+		UpstreamURLBases:           upstreamBases,
 		AntiblockModelPrefixes:     getEnvStringSlice("ANTIBLOCK_MODEL_PREFIXES", []string{"gemini-2.5-pro"}),
-		SpectreProxyWorkerURL:      workerURL,
+		SpectreProxyWorkerURL:      "",
+		SpectreProxyWorkerURLs:     workerURLs,
 		SpectreProxyAuthToken:      authToken,
 		Port:                       getEnvString("PORT", "8080"),
 		DebugMode:                  getEnvBool("DEBUG_MODE", true),
@@ -52,6 +65,13 @@ func LoadConfig() *Config {
 		RateLimitWindowSeconds:     getEnvInt("RATE_LIMIT_WINDOW_SECONDS", 60),
 		EnablePunctuationHeuristic: getEnvBool("ENABLE_PUNCTUATION_HEURISTIC", true),
 	}
+
+	// Retain legacy single worker URL for backward compatibility/access
+	if len(workerURLs) > 0 {
+		cfg.SpectreProxyWorkerURL = workerURLs[0]
+	}
+
+	return cfg
 }
 
 func getEnvString(key, defaultValue string) string {
@@ -103,4 +123,30 @@ func buildSpectreUpstream(worker, token string) string {
 		return ""
 	}
 	return worker + "/" + token + "/gemini"
+}
+
+// getEnvStringSliceFlexible splits on commas, spaces, or newlines for convenience.
+func getEnvStringSliceFlexible(raw string) []string {
+	if raw == "" {
+		return nil
+	}
+
+	// First split by newline to support multi-line values, then commas/spaces.
+	candidates := strings.FieldsFunc(raw, func(r rune) bool {
+		switch r {
+		case ',', '\n', '\r', ';':
+			return true
+		default:
+			return false
+		}
+	})
+
+	result := make([]string, 0, len(candidates))
+	for _, item := range candidates {
+		trimmed := strings.TrimSpace(item)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }

@@ -23,6 +23,7 @@ import (
 type ProxyHandler struct {
 	Config      *config.Config
 	RateLimiter *RateLimiter
+	rrCounter   uint64
 }
 
 const (
@@ -162,9 +163,14 @@ func (h *ProxyHandler) InjectSystemPrompt(body map[string]interface{}) {
 // HandleStreamingPost handles streaming POST requests
 func (h *ProxyHandler) HandleStreamingPost(w http.ResponseWriter, r *http.Request) {
 	urlObj, _ := url.Parse(r.URL.String())
-	upstreamURL := h.Config.UpstreamURLBase + urlObj.Path
+	upstreamBase := h.selectUpstreamBase()
+	upstreamURL := upstreamBase + urlObj.Path
 	if urlObj.RawQuery != "" {
 		upstreamURL += "?" + urlObj.RawQuery
+	}
+
+	if rid, ok := r.Context().Value(ctxKeyRequestID).(string); ok && rid != "" {
+		metrics.SetUpstream(rid, upstreamURL)
 	}
 
 	logger.LogInfo("=== NEW STREAMING REQUEST ===")
@@ -322,9 +328,14 @@ func (h *ProxyHandler) HandleStreamingPost(w http.ResponseWriter, r *http.Reques
 // HandleStreamingPassthrough forwards streaming requests without antiblock processing
 func (h *ProxyHandler) HandleStreamingPassthrough(w http.ResponseWriter, r *http.Request) {
 	urlObj, _ := url.Parse(r.URL.String())
-	upstreamURL := h.Config.UpstreamURLBase + urlObj.Path
+	upstreamBase := h.selectUpstreamBase()
+	upstreamURL := upstreamBase + urlObj.Path
 	if urlObj.RawQuery != "" {
 		upstreamURL += "?" + urlObj.RawQuery
+	}
+
+	if rid, ok := r.Context().Value(ctxKeyRequestID).(string); ok && rid != "" {
+		metrics.SetUpstream(rid, upstreamURL)
 	}
 
 	logger.LogInfo("=== STREAMING PASSTHROUGH REQUEST ===")
@@ -424,9 +435,14 @@ func (h *ProxyHandler) HandleStreamingPassthrough(w http.ResponseWriter, r *http
 // HandleNonStreaming handles non-streaming requests
 func (h *ProxyHandler) HandleNonStreaming(w http.ResponseWriter, r *http.Request) {
 	urlObj, _ := url.Parse(r.URL.String())
-	upstreamURL := h.Config.UpstreamURLBase + urlObj.Path
+	upstreamBase := h.selectUpstreamBase()
+	upstreamURL := upstreamBase + urlObj.Path
 	if urlObj.RawQuery != "" {
 		upstreamURL += "?" + urlObj.RawQuery
+	}
+
+	if rid, ok := r.Context().Value(ctxKeyRequestID).(string); ok && rid != "" {
+		metrics.SetUpstream(rid, upstreamURL)
 	}
 
 	upstreamHeaders := h.BuildUpstreamHeaders(r.Header)
@@ -611,4 +627,14 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.HandleNonStreaming(w, r)
+}
+
+func (h *ProxyHandler) selectUpstreamBase() string {
+	if bases := h.Config.UpstreamURLBases; len(bases) > 0 {
+		idx := atomic.AddUint64(&h.rrCounter, 1) - 1
+		selected := bases[int(idx%uint64(len(bases)))]
+		logger.LogDebug(fmt.Sprintf("Selected Spectre upstream[%d]: %s", int(idx%uint64(len(bases))), selected))
+		return selected
+	}
+	return h.Config.UpstreamURLBase
 }
