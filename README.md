@@ -18,16 +18,26 @@
 
 ### 使用 Docker（推荐）
 
-#### 方式一：使用预构建镜像
+#### 方式一：使用预构建镜像（自动多架构）
 
 ```bash
-# 拉取并运行
+# 拉取并运行（自动选择适配您CPU架构的镜像）
 docker run -d \
   --name gemini-antiblock \
   -p 8080:8080 \
   -e UPSTREAM_URL_BASE=https://generativelanguage.googleapis.com \
   ghcr.io/qlhazycoder/gemini-antiblock-spectre-proxy:latest
+
+# 使用特定版本
+docker run -d \
+  --name gemini-antiblock \
+  -p 8080:8080 \
+  -e UPSTREAM_URL_BASE=https://generativelanguage.googleapis.com \
+  ghcr.io/qlhazycoder/gemini-antiblock-spectre-proxy:v1.0.0
 ```
+
+> **支持的架构**：`linux/amd64` (x86_64) 和 `linux/arm64` (ARM64/Apple Silicon)
+> Docker会自动拉取适合您系统架构的镜像。
 
 #### 方式二：使用 Docker Compose
 
@@ -269,6 +279,39 @@ Docker 镜像支持：
 - **触发条件**：推送到 `main`/`master` 分支或创建标签
 - **构建平台**：支持 `linux/amd64` 和 `linux/arm64`
 - **发布位置**：`ghcr.io/qlhazycoder/gemini-antiblock-spectre-proxy`
+
+#### 查看构建状态
+
+访问项目的 [Actions 页面](https://github.com/QLHazyCoder/gemini-antiblock-spectre-proxy/actions) 查看最新的构建状态。
+
+#### 版本发布流程
+
+1. **开发版本（latest）**
+   ```bash
+   git add .
+   git commit -m "feat: new feature"
+   git push origin main
+   # 自动构建并发布为 latest 标签
+   ```
+
+2. **正式版本（语义化版本）**
+   ```bash
+   git tag -a v1.0.0 -m "Release version 1.0.0"
+   git push origin v1.0.0
+   # 自动构建并发布为 v1.0.0, 1.0, 1, latest 多个标签
+   ```
+
+#### 本地构建（开发调试）
+
+如果需要本地构建镜像进行调试：
+
+```bash
+# 单架构构建
+docker build -t gemini-antiblock-spectre-proxy:local .
+
+# 多架构构建（需要 Docker Buildx）
+docker buildx build --platform linux/amd64,linux/arm64 -t gemini-antiblock-spectre-proxy:local .
+```
 
 ## 许可证
 

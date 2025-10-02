@@ -55,3 +55,8 @@ logs/
 # Coverage files
 coverage.out
 coverage.html
+
+# Project-specific ignores
+docs/PROJECT_SHOWCASE.md
+.clinerules
+.cunzhi-memory
