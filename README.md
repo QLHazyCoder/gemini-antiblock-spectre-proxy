@@ -1,6 +1,38 @@
 # Gemini Antiblock Proxy (Go 版本)
 
-![Gemini Antiblock Spectre Proxy Overview](docs/images/proxy-overview.png)
+![Gemini Antiblock Spdocker run -d --name gemini-antiblock -p 8080:8080 gemini-antiblock-spectre-proxy
+```
+
+### 从源码运行
+
+```bash
+# 前置要求:Go 1.21+
+git clone https://github.com/QLHazyCoder/gemini-antiblock-spectre-proxy.git
+cd gemini-antiblock-spectre-proxy
+go mod download
+go run main.go
+```
+
+---
+
+## 💡 轻量化部署
+
+本项目资源占用极低，**1核CPU + 512MB内存**即可流畅运行，非常适合小型VPS。
+
+### 推荐配套工具
+
+- **[Caddy](https://caddyserver.com/)**: 提供自动HTTPS和反向代理
+- **[3x-ui](https://github.com/MHSanaei/3x-ui)**: 代理管理面板,与本项目完美配合
+
+### ⚠️ 地区选择重要提示
+
+**必须选择未被Gemini限制的地区部署服务器**,即使使用Cloudflare Worker反代理,源服务器位于受限地区(如中国大陆)仍可能导致API调用失败。
+
+推荐地区:🇺🇸 美国、🇪🇺 欧洲、🇯🇵 日本、🇸🇬 新加坡
+
+---
+
+## 配置erview](docs/images/proxy-overview.png)
 
 这是一个用 Go 语言重写的 Gemini API 代理服务器，具有强大的流式重试和标准化错误响应功能。它可以处理模型的"思考"过程，并在重试后过滤思考内容以保持干净的输出流。
 
